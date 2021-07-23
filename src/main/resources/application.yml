@@ -1,0 +1,6 @@
+server:
+  port: 8877
+
+person:
+  name: 张三
+  age: 18
