@@ -4,3 +4,10 @@ server:
 person:
   name: 张三
   age: 18
+
+
+#spring:
+#  security:
+#    user:
+#      name: lencho
+#      password: 123456
