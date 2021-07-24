@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 /**
  * @author Lencho
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  */
 @Slf4j
 @Configuration
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     /*@Override
@@ -45,6 +48,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
+    @Autowired
+    private PersistentTokenRepository tokenRepository;
+
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         /*http.formLogin()
@@ -55,14 +62,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/","test/hello","user/login").permitAll()
                 .anyRequest().authenticated()
                 .and().csrf().disable();*/
+        http.rememberMe()
+                .tokenRepository(tokenRepository)
+                .userDetailsService(userDetailsService)
+                .tokenValiditySeconds(60);
+
+        http.logout().logoutUrl("/logout").logoutSuccessUrl("/test/hello").permitAll();
         http.exceptionHandling().accessDeniedPage("/unauth.html");
         http.formLogin()
                 .loginPage("/login.html")
                 .loginProcessingUrl("/user/login")
-                .defaultSuccessUrl("/test/index").permitAll()
+//                .defaultSuccessUrl("/test/index").permitAll()
+                .defaultSuccessUrl("/success.html").permitAll()
                 .and().authorizeRequests()
                 .antMatchers("/", "test/hello", "user/login").permitAll()
-                .antMatchers("/test/index").hasAnyAuthority("admins2", "manager")
+                .antMatchers("/test/index").hasAnyAuthority("admins", "manager")
 //                .antMatchers("/test/index").hasAuthority("admins")
                 .anyRequest().authenticated()
                 .and().csrf().disable();
